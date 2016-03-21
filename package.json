@@ -1,7 +1,7 @@
 {
-  "name": "generator-aurelia",
-  "version": "0.8.0",
-  "description": "Yeoman generator for the JavaScript Framework Aurelia",
+  "name": "generator-aurelia-es6",
+  "version": "0.1.0",
+  "description": "Yeoman generator for the JavaScript Framework Aurelia with minor tweaks",
   "keywords": [
     "yeoman-generator",
     "aurelia",
@@ -17,11 +17,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/zewa666/generator-aurelia.git"
+    "url": "git://github.com/rangedsp/generator-aurelia.git"
   },
   "license": "MIT",
   "author": {
-    "name": "Vildan Softic",
-    "email": "zewa666@gmail.com"
+    "name": "Jonny Lin",
+    "email": "me@jonnylin.com"
   }
 }
