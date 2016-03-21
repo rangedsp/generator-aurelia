@@ -1,4 +1,17 @@
-# generator-aurelia
+# generator-aurelia-es2016
+
+This is a fork of [zewa666's generator-aurelia](https://github.com/zewa666/generator-aurelia), with a few tweaks for my own personal preference.
+
+Main difference:
+- Folder is structured in a [modlet](https://donejs.com/Features.html#section=section_Modlets) way, e.g. putting the view and its corresponding viewModel in the same folder.
+- Subgenerators for service/components/pages.
+- No longer download from the Skeleton App first, templates are local.
+- Only support ES6 for now.
+
+TODO:
+- Include CSS / LESS for modlets.
+- Support other project types from the Skeleton App template.
+- Find a more elegant way to do routes for sub folders.
 
 This is a Yeoman Generator for the [Skeleton App](https://github.com/aurelia/skeleton-navigation) of the [Aurelia](http://www.aurelia.io/) platform. It sets up a standard navigation-style app using gulp to build your ES6 code with [Babel](http://babeljs.io). Karma/Jasmine testing is configured as well.
 
