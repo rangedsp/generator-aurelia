@@ -1,17 +1,19 @@
-# generator-aurelia-es2016
+# generator-aurelia-es6
 
 This is a fork of [zewa666's generator-aurelia](https://github.com/zewa666/generator-aurelia), with a few tweaks for my own personal preference.
+Work in progress, I recommend the [original](https://github.com/zewa666/generator-aurelia) if you want stability and TypeScript.
 
-Main difference:
+### Main difference:
 - Folder is structured in a [modlet](https://donejs.com/Features.html#section=section_Modlets) way, e.g. putting the view and its corresponding viewModel in the same folder.
 - Subgenerators for service/components/pages.
 - No longer download from the Skeleton App first, templates are local.
 - Only support ES6 for now.
 
-TODO:
+### TODO:
 - Include CSS / LESS for modlets.
 - Support other project types from the Skeleton App template.
 - Find a more elegant way to do routes for sub folders.
+ 
 
 This is a Yeoman Generator for the [Skeleton App](https://github.com/aurelia/skeleton-navigation) of the [Aurelia](http://www.aurelia.io/) platform. It sets up a standard navigation-style app using gulp to build your ES6 code with [Babel](http://babeljs.io). Karma/Jasmine testing is configured as well.
 
@@ -24,55 +26,31 @@ This generator will use [JSPM](http://jspm.io), Aurelias package manager of choi
 
 > The recent update will take care of running `npm install` and `jspm install` after downloading the boilerplate app, so this shortens the process to get up and running.
 
-1. Verify that Yeoman is installed
+1. Install all necessary components
 
   ```shell
-  npm install -g yo
-  ```
-2. Install this generator
-
-  ```shell
-  npm install -g generator-aurelia
+  npm install -g yo generator-aurelia-es6 gulp jspm
   ```
 
-3. Ensure that [Gulp](http://gulpjs.com/) is installed. If you need to install it, use the following command:
-
-  ```shell
-  npm install -g gulp
-  ```
-4. Ensure that [jspm](http://jspm.io/) is installed. If you need to install it, use the following command:
-
-  ```shell
-  npm install -g jspm
-  ```
-
-5. Create a new project folder and move into it in the terminal
+2. Create a new project folder and move into it in the terminal
 
   ```shell
   mkdir YOUR_PROJECT_NAME
   cd YOUR_PROJECT_NAME
   ```
-
-6. Use Github API Token if the generator prompts a rate limit error. Execute the following command:
-
-  ```shell
-  export GITHUB_TOKEN=YOUR_ACCESS_TOKEN
-  ```
   
-  > Windows users should set a user environment variable called GITHUB_TOKEN with the value being your actual token. 
-
-7. Execute the following command
+3. Execute the following command
 
   ```shell
   yo aurelia
   ```
 
-8. To run the app, execute the following command:
+4. To run the app, execute the following command:
 
   ```shell
   gulp watch
   ```
-9. Browse to [http://localhost:9000](http://localhost:9000) to see the app. You can make changes in the code found under `src` and the browser should auto-refresh itself as you save files.
+5. Browse to [http://localhost:9000](http://localhost:9000) to see the app. You can make changes in the code found under `src` and the browser should auto-refresh itself as you save files.
 
 ## Update the skeleton jspm dependencies
 If you're inside your skeleton folder you can run the following command to update your installation and get the latest versions of the dependencies used:
@@ -95,10 +73,23 @@ In order to create a new Aurelia Page just enter the following command inside yo
   ```shell
   yo aurelia:page YOURPAGENAME
   ```
+  
+## Creating a new component
+Components are very similar to pages at the moment, more difference will come later.
+
+  ```shell
+  yo aurelia:component YOURCOMPONENTNAME
+  ```
+  
+## Creating a new service
+
+  ```shell
+  yo aurelia:service YOURSERVICENAME
+  ```
 
 > If you get an error like `Error: spawn git ENOENT` when executing the yo command, you should check whether GIT is installed and accessible from the command line
 
 This will create a View and ViewModel with the given name inside the ```./src``` folder
 
 ## Credits
-Thanks to Addy Osmani for his awesome [generator-boilerplate](https://github.com/addyosmani/generator-boilerplate) repo.
+Thanks to Vildan Softic for [generator-aurelia](https://github.com/zewa666/generator-aurelia), it's so awesome that I'm forking it
