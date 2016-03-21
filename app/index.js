@@ -4,141 +4,120 @@ var debug = require('debug')('yeoman:environment');
 var GitHubApi = require('github');
 var exec = require('child_process').exec;
 
-var projectTypeChoice;
 
 var Generator = module.exports = yeoman.generators.Base.extend({
 
-  constructor: function(){
-    yeoman.generators.Base.apply(this, arguments);
-    this.option('skip-install');
-  },
+    constructor: function() {
+        yeoman.generators.Base.apply(this, arguments);
+        this.option('skip-install');
+    },
 
-  prompting: function () {
-    var done = this.async();
-    this.prompt({
-      type    : 'list',
-      name    : 'project',
-      choices : [
-        { name: 'EcmaScript 2016', value: 'skeleton-es2016'},
-        { name: 'ASP.NET 5 - EcmaScript 2016', value: 'skeleton-es2016-asp.net5/src/skeleton-navigation-es2016-vs'},
-        { name: 'TypeScript', value: 'skeleton-typescript'},
-        { name: 'ASP.NET 5 - TypeScript', value: 'skeleton-typescript-asp.net5/src/skeleton-navigation-typescript-vs'},
-      ],
-      message : 'Which Aurelia preset would you like to install?',
-    }, function (answers) {
-      projectTypeChoice = answers.project;
-      done();
-    }.bind(this));
-  },
+    init: function() {
+        var done = this.async();
 
-  init: function () {
-    var done = this.async();
+        var isWin = /^win/.test(process.platform);
+        this.log.info('Running ' + (isWin ? '' : 'non-') + 'windows platform (' + process.platform + ')');
 
-    var ghdownload = require('download-github-repo');
+        var sourceRoot = this.sourceRoot();
+        var destinationRoot = this.destinationRoot();
 
-    this.log(this.destinationRoot());
-
-
-    var githubOptions = {
-      // required
-      version: '3.0.0',
-      debug: false,
-      protocol: 'https',
-      host: 'api.github.com',
-      pathPrefix: '',
-      timeout: 30000,
-      headers: {
-        'user-agent': 'Aurelia-Github-Loader'
-      }
-    };
-
-    if(this.options['proxy']) {
-      this.log.info(this.options['proxy']);
-      githubOptions['proxy'] = this.options['proxy'];
-    }
-
-    var github = new GitHubApi(githubOptions);
-
-    if (process.env.GITHUB_TOKEN) {
-        github.authenticate({
-            type: 'oauth',
-            token: process.env.GITHUB_TOKEN
-        })
-    }
-
-    github.repos.getTags({ user: 'aurelia', repo: 'skeleton-navigation', page: 1, per_page: 1 }, function(err, result) {
-      if(err !== undefined && err !== null) {
-        this.env.error('Failed to get latest release info. Reason: ' + err.message);
-        return;
-      }
-
-      if(result.length < 1) {
-        this.env.error('No Release-Tags available');
-        return;
-      }
-      this.log.info('Downloading latest available release: ' + result[0].name);
-
-      // Kick off the repo download
-      ghdownload('aurelia/skeleton-navigation#' + result[0].name, this.destinationRoot() + '/github_tmp', function(err) {
-
-        if (err !== undefined && err !== null) {
-          this.env.error(err);
+        if (isWin) {
+            var moveCommand = 'xcopy "' + sourceRoot +  '\\*.*" "' + destinationRoot + '" /E /Y';
         } else {
-          this.log.ok('Download complete');
-
-          //check platform and customize the exec commands
-          var isWin = /^win/.test(process.platform);
-          this.log.info('Running ' + (isWin ? '' : 'non-') + 'windows platform (' + process.platform + ')');
-
-          if (isWin) {
-            var tempDestination = this.destinationRoot() + '\\github_tmp';
-            var mvCommand = 'xcopy "' + tempDestination + '\\' + projectTypeChoice + '\\*.*" "' + this.destinationRoot() + '" /E /Y';
-            var rmCommand = 'del "' + tempDestination + '" /S /Q';
-          } else {
-            var tempDestination = this.destinationRoot() + '/github_tmp';
-            var mvCommand = 'mv -v "' + tempDestination + '/' + projectTypeChoice +'/"* "'+ this.destinationRoot()+'/"';
-            var rmCommand = 'rm -rf "' + tempDestination + '"';
-          }
-
-          // move all files and sub folders from the selected dir into the destination dir
-          mv = exec(mvCommand, function(error, stdout, stderr) {
-            if (error !== null) {
-              this.env.error(error);
-            }
-
-            // remove the left over temporary files
-            this.log.ok('Specified skeleton folder moved: ' + projectTypeChoice);
-            rm = exec(rmCommand, function(error, stdout, stderr) {
-              if (error !== null) {
-                this.env.error(error);
-              }
-              this.log.ok('Temporary github folder removed');
-
-              done();
-            }.bind(this));
-          }.bind(this));
+            var moveCommand = 'mv -v "' + sourceRoot +'/"* "' + destinationRoot + '/"';
         }
-      }.bind(this));
-    }.bind(this));
-  },
 
-  executeNPMInstall: function () {
-    if (!this.options['skip-install']){
-      this.log.info('Executing NPM install');
-      this.npmInstall(null);
-    } else {
-      this.log.skip('NPM install deliberately skipped');
-    }
-  },
+        var makeDirectoryCommand = buildMakeDirectoryCommand.bind({
+            isWin: isWin,
+            destinationRoot: destinationRoot
+        });
 
-  runJSPM: function() {
-    if (!this.options['skip-install']){
-      this.log.info('Executing JSPM install');
-      this.spawnCommand('jspm', ['install']);
-    } else{
-      this.log.skip('JSPM install deliberately skipped');
+        var moveObjectCommand = buildMoveCommand.bind({
+            isWin: isWin,
+            destinationRoot: destinationRoot
+        });
+
+        var commands = [
+            moveCommand,
+            makeDirectoryCommand('pages'),
+            makeDirectoryCommand('components'),
+            makeDirectoryCommand('services'),
+            moveObjectCommand('users.*', 'pages', 'users'),
+            moveObjectCommand('child-router.*', 'pages', 'child-router'),
+            moveObjectCommand('welcome.*', 'pages', 'welcome'),
+            moveObjectCommand('nav-bar.html', 'components', 'nav-bar'),
+            {
+                command: moveObjectCommand('blur-image.js', 'services'),
+                callback: function() {
+                    done();
+                }
+            }
+        ];
+
+        execAll.call(this, commands, 0);
+    },
+
+    executeNPMInstall: function() {
+        if (!this.options['skip-install']) {
+            this.log.info('Executing NPM install');
+            this.npmInstall(null);
+        } else {
+            this.log.skip('NPM install deliberately skipped');
+        }
+    },
+
+    runJSPM: function() {
+        if (!this.options['skip-install']) {
+            this.log.info('Executing JSPM install');
+            this.spawnCommand('jspm', ['install']);
+        } else {
+            this.log.skip('JSPM install deliberately skipped');
+        }
     }
-  }
 });
+
+function execAll(commands, i) {
+    var index = i;
+    var commandObject = commands[index];
+    if (!commandObject) { return; }
+
+    var command = typeof commandObject === 'string'
+        ? commandObject
+        : commandObject.command;
+
+    console.log(command);
+
+    exec(command, function(error, stdout, stderr) {
+
+        if (error !== null && error.code > 1) {
+            this.env.error(error);
+        }
+
+        if (commandObject.callback) {
+            commandObject.callback.call(this);
+        }
+
+        var nextIndex = index + 1;
+        execAll.call(this, commands, nextIndex);
+    }.bind(this));
+}
+
+function buildMakeDirectoryCommand(name) {
+    if (this.isWin) {
+        return makeDirectoryCommand = 'mkdir "' + this.destinationRoot + '\\src\\' + name + '"';
+    } else {
+        return makeDirectoryCommand = 'mkdir "' + this.destinationRoot + '/src/' + name + '"';
+    } 
+}
+
+function buildMoveCommand(matches, destination, subfolder) {
+    if (this.isWin) {
+        subfolder = subfolder ? '\\' + subfolder : '';
+        return 'robocopy "' + this.destinationRoot + '\\src" "' + this.destinationRoot + '\\src\\' + destination + subfolder + '" "' + matches + '" /MOV /njh /njs /ndl /nc /ns';
+    } else {
+        subfolder = subfolder ?  '/'  + subfolder : '';
+        return 'mv -v "' + this.destinationRoot + '/src/"' + matches + ' "' + this.destinationRoot + '/src/' + destination + subfolder + '"';
+    }
+}
 
 Generator.name = 'Generator Aurelia';

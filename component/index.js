@@ -4,17 +4,16 @@ module.exports = generators.NamedBase.extend({
     generateAureliaVM: function() {
         this.fs.copyTpl(
             this.templatePath('vm.js'),
-            this.destinationPath('src/pages/' + this.name + '/' + this.name + '.js'),
-            { PageName: this.name }
+            this.destinationPath('src/components/' + this.name + '/' + this.name + '.js'),
+            { ComponentName: this.name }
         );
     },
-
     generateAureliaView: function() {
         this.fs.copyTpl(
             this.templatePath('view.html'),
-            this.destinationPath('src/pages/' + this.name + '/' + this.name + '.html'),
+            this.destinationPath('src/components/' + this.name + '/' + this.name + '.html'),
             {
-                PageName: this.name,
+                ComponentName: this.name,
                 Hello: '${hello}'
             }
         );
